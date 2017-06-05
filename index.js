@@ -62,6 +62,7 @@ module.exports = function basicAuth(callback, realm) {
   return function(req, res, next) {
     var authorization = req.headers.authorization;
 
+    if (req.method == 'OPTIONS') return next();
     if (req.user) return next();
     if (!authorization) return unauthorized(res, realm);
 
