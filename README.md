@@ -1,4 +1,4 @@
-# basic-auth-connect [![Build Status](https://travis-ci.org/expressjs/basic-auth-connect.png)](https://travis-ci.org/expressjs/basic-auth-connect)
+# basic-auth-connect
 
 Connect's Basic Auth middleware in its own module. This module is considered deprecated. You should instead create your own middleware with [basic-auth](https://github.com/visionmedia/node-basic-auth).
 

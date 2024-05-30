@@ -1,0 +1,70 @@
+name: ci
+
+on:
+- pull_request
+- push
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        name:
+        - Node.js 0.10
+        - Node.js 0.12
+        - io.js 1.x
+        - io.js 2.x
+        - io.js 3.x
+        - Node.js 4.x
+        - Node.js 6.x
+        - Node.js 8.x
+        - Node.js 10.x
+        - Node.js 11.x
+        - Node.js 12.x
+        - Node.js 13.x
+        - Node.js 14.x
+        - Node.js 15.x
+        - Node.js 16.x
+        - Node.js 17.x
+        - Node.js 18.x
+        - Node.js 19.x
+        - Node.js 20.x
+        - Node.js 21.x
+        - Node.js 22.x
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Node.js ${{ matrix.node-version }}
+      shell: bash -eo pipefail -l {0}
+      run: |
+        nvm install --default ${{ matrix.node-version }}
+        if [[ "${{ matrix.node-version }}" == 0.* && "$(cut -d. -f2 <<< "${{ matrix.node-version }}")" -lt 10 ]]; then
+          nvm install --alias=npm 0.10
+          nvm use ${{ matrix.node-version }}
+          if [[ "$(npm -v)" == 1.1.* ]]; then
+            nvm exec npm npm install -g npm@1.1
+            ln -fs "$(which npm)" "$(dirname "$(nvm which npm)")/npm"
+          else
+            sed -i '1s;^.*$;'"$(printf '#!%q' "$(nvm which npm)")"';' "$(readlink -f "$(which npm)")"
+          fi
+          npm config set strict-ssl false
+        fi
+        dirname "$(nvm which ${{ matrix.node-version }})" >> "$GITHUB_PATH"
+
+    - name: Install Node.js dependencies
+      run: npm install
+
+    - name: List environment
+      id: list_env
+      shell: bash
+      run: |
+        echo "node@$(node -v)"
+        echo "npm@$(npm -v)"
+        npm -s ls ||:
+        (npm -s ls --depth=0 ||:) | awk -F'[ @]' 'NR>1 && $2 { print $2 "=" $3 }' >> "$GITHUB_OUTPUT"
+
+    - name: Run tests
+      shell: bash
+      run: |
+        npm test
