@@ -85,7 +85,7 @@ test(app, 'basicAuth(user, pass)');
 
 
 
-var app = connect();
+app = connect();
 
 app.use(basicAuth(function(user, pass){
   return 'tj' == user && 'tobi:learnboost' == pass;
@@ -100,7 +100,7 @@ test(app, 'basicAuth(callback)');
 
 
 
-var app = connect();
+app = connect();
 
 app.use(basicAuth(function(user, pass, fn){
   var ok = 'tj' == user && 'tobi:learnboost' == pass;
