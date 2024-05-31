@@ -1,6 +1,12 @@
 # basic-auth-connect
 
-Connect's Basic Auth middleware in its own module. This module is considered deprecated. You should instead create your own middleware with [basic-auth](https://github.com/visionmedia/node-basic-auth).
+Connect's Basic Auth middleware in its own module. 
+
+## :warning: IMPORTANT :warning:
+
+**This module is deprecated** 
+
+You should instead create your own middleware with [basic-auth](https://github.com/visionmedia/node-basic-auth).
 
 ## API
 
