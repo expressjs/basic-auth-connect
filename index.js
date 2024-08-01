@@ -11,11 +11,7 @@ const http = require('http');
 
 /**
  * Basic Auth:
- *
- * Status: Deprecated. No bug reports or pull requests are welcomed
- * for this middleware. However, this middleware will not be removed.
- * Instead, you should use [basic-auth](https://github.com/visionmedia/node-basic-auth).
- *
+ * 
  * Enfore basic authentication by providing a `callback(user, pass)`,
  * which must return `true` in order to gain access. Alternatively an async
  * method is provided as well, invoking `callback(user, pass, callback)`. Populates
