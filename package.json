@@ -28,8 +28,5 @@
   },
   "scripts": {
     "test": "make test"
-  },
-  "dependencies": {
-    "tsscmp": "^1.0.6"
   }
 }

@@ -54,6 +54,8 @@ app.listen(3000, () => {
 
 Async callback verification, accepting `fn(err, user)`.
 
+Note: It is recommended to use `crypto.timingSafeEqual(a, b)` [(Doc)](https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b) to compare the user and password strings.
+
 ```js
 connect()
 .use(basicAuth(function(user, pass, fn){

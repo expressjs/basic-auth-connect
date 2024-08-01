@@ -1,5 +1,5 @@
-const timingSafeCompare = require('tsscmp');
 const http = require('http');
+const crypto = require('crypto');
 
 /*!
  * Connect - basicAuth
@@ -26,8 +26,10 @@ const http = require('http');
  *
  *     connect()
  *       .use(connect.basicAuth(function(user, pass){
- *         return 'tj' == user && 'wahoo' == pass;
+ *         return 'tj' === user && 'wahoo' === pass;
  *       }))
+ *  
+ *  Note: it is recommended to use `crypto.timingSafeEqual(a, b)` https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b
  *
  *  Async callback verification, accepting `fn(err, user)`.
  *
@@ -50,11 +52,25 @@ module.exports = function basicAuth(callback, realm) {
     password = realm;
     if (typeof password !== 'string') throw new Error('password argument required');
     realm = arguments[2];
-    callback = function(user, pass){
-      const usernameValid = timingSafeCompare(user, username);
-      const passwordValid = timingSafeCompare(pass, password);
+
+    callback = (user, pass) => {
+      const buffers = [
+        Buffer.from(user),
+        Buffer.from(pass),
+        Buffer.from(username),
+        Buffer.from(password)
+      ];
+
+      // Determine the maximum length among all buffers
+      const maxLength = Math.max(...buffers.map(buf => buf.length));
+      
+      // Pad each buffer to the maximum length
+      const paddedBuffers = buffers.map(buf => Buffer.concat([buf, Buffer.alloc(maxLength - buf.length)]));
+    
+      const usernameValid = crypto.timingSafeEqual(paddedBuffers[0], paddedBuffers[2])
+      const passwordValid = crypto.timingSafeEqual(paddedBuffers[1], paddedBuffers[3])
       return usernameValid && passwordValid;
-    }
+    };
   }
 
   realm = realm || 'Authorization Required';
