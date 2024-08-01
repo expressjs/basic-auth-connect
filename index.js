@@ -63,7 +63,10 @@ module.exports = function basicAuth(callback, realm) {
     var authorization = req.headers.authorization;
 
     if (req.user) return next();
-    if (!authorization) return unauthorized(res, realm);
+    if (!authorization) {
+      unauthorized(res, realm);
+      return;
+    }
 
     var parts = authorization.split(' ');
 
@@ -81,7 +84,10 @@ module.exports = function basicAuth(callback, realm) {
     // async
     if (callback.length >= 3) {
       callback(user, pass, function(err, user){
-        if (err || !user)  return unauthorized(res, realm);
+        if (err || !user) {
+          unauthorized(res, realm);
+          return;
+        }
         req.user = req.remoteUser = user;
         next();
       });
