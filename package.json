@@ -23,6 +23,9 @@
     "should": "*",
     "supertest": "*"
   },
+  "engines": {
+    "node": ">= 18.0.0"
+  },
   "scripts": {
     "test": "make test"
   },
