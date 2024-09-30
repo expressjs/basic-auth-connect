@@ -1,3 +1,4 @@
+var timingSafeCompare = require('tsscmp');
 var http = require('http');
 
 /*!
@@ -53,7 +54,9 @@ module.exports = function basicAuth(callback, realm) {
     if ('string' != typeof password) throw new Error('password argument required');
     realm = arguments[2];
     callback = function(user, pass){
-      return user == username && pass == password;
+      const usernameValid = timingSafeCompare(user, username);
+      const passwordValid = timingSafeCompare(pass, password);
+      return usernameValid && passwordValid;
     }
   }
 

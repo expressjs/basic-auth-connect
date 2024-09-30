@@ -18,12 +18,15 @@
     "url": "https://github.com/expressjs/basic-auth-connect/issues"
   },
   "devDependencies": {
+    "connect": "*",
     "mocha": "*",
     "should": "*",
-    "supertest": "*",
-    "connect": "*"
+    "supertest": "*"
   },
   "scripts": {
     "test": "make test"
+  },
+  "dependencies": {
+    "tsscmp": "^1.0.6"
   }
 }
