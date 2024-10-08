@@ -80,4 +80,4 @@ This will execute the tests defined in the [Makefile](./Makefile) using Mocha.
 
 ## License
 
-This project is licensed under the MIT License. See theç [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
