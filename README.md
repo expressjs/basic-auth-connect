@@ -2,29 +2,59 @@
 
 Connect's Basic Auth middleware in its own module. You should consider to create your own middleware with [basic-auth](https://github.com/visionmedia/node-basic-auth).
 
+It requires Node.js 18.x or higher.
+
+## Installation
+
+```bash
+npm install basic-auth-connect
+```
+
 ## API
 
+Import the module
+
 ```js
-var basicAuth = require('basic-auth-connect');
+const basicAuth = require('basic-auth-connect');
 ```
 
 Simple username and password
 
 ```js
-connect()
-.use(basicAuth('username', 'password'));
+const connect = require('connect');
+
+const app = connect()
+  .use(basicAuth('username', 'password'))
+  .use((req, res) => {
+    res.end('Authenticated!');
+  });
+
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
 ```
 
 Callback verification
 
 ```js
-connect()
-.use(basicAuth(function(user, pass){
-  return 'tj' == user && 'wahoo' == pass;
-}))
+const connect = require('connect');
+
+const app = connect()
+  .use(basicAuth((user, pass) => {
+    return user === 'tj' && pass === 'wahoo';
+  }))
+  .use((req, res) => {
+    res.end('Authenticated!');
+  });
+
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
 ```
 
 Async callback verification, accepting `fn(err, user)`.
+
+Note: It is recommended to use `crypto.timingSafeEqual(a, b)` [(Doc)](https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b) to compare the user and password strings.
 
 ```js
 connect()
@@ -37,6 +67,17 @@ connect()
 
 Important: When using the callback method, it is recommended to use a time-safe comparison function like [crypto.timingSafeEqual](https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b) to prevent timing attacks.
 
+## Running Tests
+
+To run the tests, use the following command:
+
+```bash
+npm test
+```
+
+This will execute the tests defined in the [Makefile](./Makefile) using Mocha.
+
+
 ## License
 
-[MIT](./LICENSE)
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.

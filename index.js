@@ -1,20 +1,17 @@
-var timingSafeCompare = require('tsscmp');
-var http = require('http');
+const http = require('http');
+const crypto = require('crypto');
 
 /*!
  * Connect - basicAuth
  * Copyright(c) 2010 Sencha Inc.
  * Copyright(c) 2011 TJ Holowaychuk
+ * Copyright(c) 2024 Ulises Gascón
  * MIT Licensed
  */
 
 /**
  * Basic Auth:
- *
- * Status: Deprecated. No bug reports or pull requests are welcomed
- * for this middleware. However, this middleware will not be removed.
- * Instead, you should use [basic-auth](https://github.com/visionmedia/node-basic-auth).
- *
+ * 
  * Enfore basic authentication by providing a `callback(user, pass)`,
  * which must return `true` in order to gain access. Alternatively an async
  * method is provided as well, invoking `callback(user, pass, callback)`. Populates
@@ -29,8 +26,10 @@ var http = require('http');
  *
  *     connect()
  *       .use(connect.basicAuth(function(user, pass){
- *         return 'tj' == user && 'wahoo' == pass;
+ *         return 'tj' === user && 'wahoo' === pass;
  *       }))
+ *  
+ *  Note: it is recommended to use `crypto.timingSafeEqual(a, b)` https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b
  *
  *  Async callback verification, accepting `fn(err, user)`.
  *
@@ -45,25 +44,39 @@ var http = require('http');
  */
 
 module.exports = function basicAuth(callback, realm) {
-  var username, password;
+  let username, password;
 
   // user / pass strings
-  if ('string' == typeof callback) {
+  if (typeof callback === 'string') {
     username = callback;
     password = realm;
-    if ('string' != typeof password) throw new Error('password argument required');
+    if (typeof password !== 'string') throw new Error('password argument required');
     realm = arguments[2];
-    callback = function(user, pass){
-      const usernameValid = timingSafeCompare(user, username);
-      const passwordValid = timingSafeCompare(pass, password);
+
+    callback = (user, pass) => {
+      const buffers = [
+        Buffer.from(user),
+        Buffer.from(pass),
+        Buffer.from(username),
+        Buffer.from(password)
+      ];
+
+      // Determine the maximum length among all buffers
+      const maxLength = Math.max(...buffers.map(buf => buf.length));
+      
+      // Pad each buffer to the maximum length
+      const paddedBuffers = buffers.map(buf => Buffer.concat([buf, Buffer.alloc(maxLength - buf.length)]));
+    
+      const usernameValid = crypto.timingSafeEqual(paddedBuffers[0], paddedBuffers[2])
+      const passwordValid = crypto.timingSafeEqual(paddedBuffers[1], paddedBuffers[3])
       return usernameValid && passwordValid;
-    }
+    };
   }
 
   realm = realm || 'Authorization Required';
 
-  return function(req, res, next) {
-    var authorization = req.headers.authorization;
+  return (req, res, next) => {
+    const authorization = req.headers.authorization;
 
     if (req.user) return next();
     if (!authorization) {
@@ -71,22 +84,22 @@ module.exports = function basicAuth(callback, realm) {
       return;
     }
 
-    var parts = authorization.split(' ');
+    const parts = authorization.split(' ');
 
     if (parts.length !== 2) return next(error(400));
 
-    var scheme = parts[0]
-      , credentials = new Buffer(parts[1], 'base64').toString()
-      , index = credentials.indexOf(':');
+    const scheme = parts[0];
+    const credentials = Buffer.from(parts[1], 'base64').toString();
+    const index = credentials.indexOf(':');
 
-    if ('Basic' != scheme || index < 0) return next(error(400));
+    if (scheme !== 'Basic' || index < 0) return next(error(400));
 
-    var user = credentials.slice(0, index)
-      , pass = credentials.slice(index + 1);
+    const user = credentials.slice(0, index);
+    const pass = credentials.slice(index + 1);
 
     // async
     if (callback.length >= 3) {
-      callback(user, pass, function(err, user){
+      callback(user, pass, (err, user) => {
         if (err || !user) {
           unauthorized(res, realm);
           return;
@@ -113,12 +126,11 @@ module.exports = function basicAuth(callback, realm) {
  * @param {String} realm
  * @api private
  */
-
 function unauthorized(res, realm) {
   res.statusCode = 401;
-  res.setHeader('WWW-Authenticate', 'Basic realm="' + realm + '"');
+  res.setHeader('WWW-Authenticate', `Basic realm="${realm}"`);
   res.end('Unauthorized');
-};
+}
 
 /**
  * Generate an `Error` from the given status `code`
@@ -129,9 +141,8 @@ function unauthorized(res, realm) {
  * @return {Error}
  * @api private
  */
-
-function error(code, msg){
-  var err = new Error(msg || http.STATUS_CODES[code]);
+function error(code, msg) {
+  const err = new Error(msg || http.STATUS_CODES[code]);
   err.status = code;
   return err;
-};
+}
