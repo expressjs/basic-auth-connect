@@ -13,6 +13,10 @@
     "type": "git",
     "url": "https://github.com/expressjs/basic-auth-connect.git"
   },
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/express"
+  },
   "bugs": {
     "mail": "me@jongleberry.com",
     "url": "https://github.com/expressjs/basic-auth-connect/issues"
